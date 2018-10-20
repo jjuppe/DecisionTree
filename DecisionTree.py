@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.tree import DecisionTreeClassifier
-import sklearn.tree as tree
 from time import time
 
 
@@ -47,7 +46,7 @@ def calculate_best_threshold(data, attribute, y_attribute):
     best_gini = 1
     for idx, candidate in enumerate(col[1:]):
         thresh = (col[idx] + candidate) / 2
-        gini_index = calculate_gini_index(data, candidate, attribute, y_attribute)
+        gini_index = calculate_gini_index(data, thresh, attribute, y_attribute)
         print('Attribute: {}, gini: {}, treshold: {}'.format(attribute, gini_index, thresh))
         if gini_index < best_gini:
             best_threshold = thresh
