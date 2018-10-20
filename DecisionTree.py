@@ -132,6 +132,8 @@ class Tree:
 
     def predict(self, data):
         result = list()
+        if isinstance(data, dict):
+            data = pd.DataFrame(data)
         for idx, row in data.iterrows():
             result.append(self.predict_single_row(row, self.root))
         return result
@@ -143,6 +145,24 @@ class Tree:
             return self.predict_single_row(row, node.left)
         if row[node.attribute] > node.threshold:
             return self.predict_single_row(row, node.right)
+
+    def predict_probability(self, data):
+        root = self.root
+        pred = self.predict(data)
+        if isinstance(data, dict):
+            data = pd.DataFrame(data)
+        result = list()
+        for idx, row in data.iterrows():
+            result.append(self.predict_prob_recursive(row, root, pred[idx]))
+        return result
+
+    def predict_prob_recursive(self, row, node, classification):
+        if node.leaf:
+            return node.classes[classification] / sum(node.classes)
+        if row[node.attribute] <= node.threshold:
+            return self.predict_prob_recursive(row, node.left, classification)
+        if row[node.attribute] > node.threshold:
+            return self.predict_prob_recursive(row, node.right, classification)
 
 
 if __name__ == '__main__':
@@ -157,6 +177,10 @@ if __name__ == '__main__':
     print("Prediction took {} seconds".format(end - start))
     print("Confusion Matrix: \n" + str(confusion_matrix(data[' z'], pred)))
     print('Overall accuracy: {}'.format(round(accuracy_score(data[' z'], pred), 3)))
+    input = {'x1': [4.1, 6.1], ' x2': [-0.1, 0.4], ' x3': [2.2, 1.3]}
+    prob = dt.predict_probability(input)
+    pred_ex = dt.predict(input)
+    print('Probability: {}, prediction: {}'.format(prob, pred_ex))
 
     # Comparison to sklearn kit
     print("\n" + "-" * 10 + "Comparison to DTClassifier from sklearn" + 10 * "-")
